@@ -359,12 +359,14 @@ func processPod(ctx context.Context, clientset *kubernetes.Clientset, client *ht
 
 	metricPodsScraped.Inc()
 
-	desiredCostStr := "0"
-	if val > 0 {
-		desiredCostStr = "10000"
-	}
+	desiredCostStr := strconv.Itoa(int(val))
 
 	currentCostStr := pod.Annotations[AnnotationDeletionCost]
+
+	// If missing, K8s treats it as 0. Avoid unnecessary patches.
+	if currentCostStr == "" && desiredCostStr == "0" {
+		return val > 0
+	}
 
 	if currentCostStr != desiredCostStr {
 		slog.Info("Patching Pod deletion cost", "namespace", pod.Namespace, "pod", pod.Name, "oldCost", currentCostStr, "newCost", desiredCostStr, "metric", metricName, "value", val)

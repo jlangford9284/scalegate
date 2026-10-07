@@ -24,8 +24,8 @@ Scalegate runs a configurable background loop that watches for Pods carrying the
 
 1. It makes a lightweight HTTP request to the Pod's Prometheus `/metrics` endpoint.
 2. It parses the payload looking for your designated "active tasks" metric (e.g., `scalegate_active_tasks`).
-3. If the metric is `> 0`, it patches the Pod's `controller.kubernetes.io/pod-deletion-cost` annotation to `10000`.
-4. The Kubernetes HPA and Cluster Autoscaler natively respect this annotation, ensuring this Pod is skipped during scale-down events until the active tasks drop back to `0`.
+3. It dynamically patches the Pod's `controller.kubernetes.io/pod-deletion-cost` annotation directly to the integer value of your metric.
+4. The Kubernetes HPA natively respects this cost. When scaling down, Kubernetes naturally evicts the most idle Pods (`0` cost) first, completely shielding your active workers and systematically balancing terminations based on live workload size!
 
 ---
 
