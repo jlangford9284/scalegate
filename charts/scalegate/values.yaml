@@ -1,0 +1,37 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/jlangford9284/scalegate
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets:
+  - name: private-ghcr-secret
+
+config:
+  scrapeInterval: "3s"
+  httpTimeout: "1500ms"
+  defaultMetricName: "scalegate_active_tasks"
+
+# Leave empty ("") to watch the entire cluster.
+# Set to a comma-separated list of namespaces to restrict the operator's scope.
+watchNamespaces: ""
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+serviceAccount:
+  create: true
+  name: ""
+
+leaderElection:
+  enabled: true
+
+metrics:
+  enabled: true
+  port: 8081

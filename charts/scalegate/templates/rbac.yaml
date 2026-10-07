@@ -1,0 +1,85 @@
+{{- if .Values.serviceAccount.create -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "scalegate.serviceAccountName" . }}
+  labels:
+    app: {{ include "scalegate.name" . }}
+{{- end }}
+{{- if .Values.leaderElection.enabled }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "scalegate.fullname" . }}-leader-election
+  namespace: {{ .Release.Namespace }}
+rules:
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "scalegate.fullname" . }}-leader-election
+  namespace: {{ .Release.Namespace }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "scalegate.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: {{ include "scalegate.fullname" . }}-leader-election
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
+---
+{{- if eq .Values.watchNamespaces "" }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "scalegate.fullname" . }}-pods
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "scalegate.fullname" . }}-pods
+subjects:
+- kind: ServiceAccount
+  name: {{ include "scalegate.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ include "scalegate.fullname" . }}-pods
+  apiGroup: rbac.authorization.k8s.io
+{{- else }}
+{{- range $namespace := splitList "," .Values.watchNamespaces }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "scalegate.fullname" $ }}-pods
+  namespace: {{ $namespace | trim }}
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "scalegate.fullname" $ }}-pods
+  namespace: {{ $namespace | trim }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "scalegate.serviceAccountName" $ }}
+  namespace: {{ $.Release.Namespace }}
+roleRef:
+  kind: Role
+  name: {{ include "scalegate.fullname" $ }}-pods
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
+{{- end }}

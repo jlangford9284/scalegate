@@ -1,0 +1,48 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scalegate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scalegate
+  namespace: scalegate
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: scalegate
+  template:
+    metadata:
+      labels:
+        app: scalegate
+    spec:
+      imagePullSecrets:
+      - name: private-ghcr-secret
+      serviceAccountName: scalegate
+      containers:
+      - name: operator
+        image: ghcr.io/jlangford9284/scalegate:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: SCRAPE_INTERVAL_SECONDS
+          value: "3"
+        - name: SCRAPE_TIMEOUT_SECONDS
+          value: "2"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi

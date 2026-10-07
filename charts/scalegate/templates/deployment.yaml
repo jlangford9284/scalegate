@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "scalegate.fullname" . }}
+  labels:
+    app: {{ include "scalegate.name" . }}
+    helm.sh/chart: {{ include "scalegate.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "scalegate.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "scalegate.name" . }}
+      {{- if .Values.metrics.enabled }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ .Values.metrics.port }}"
+      {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "scalegate.serviceAccountName" . }}
+      containers:
+        - name: operator
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: WATCH_NAMESPACES
+              value: "{{ .Values.watchNamespaces }}"
+            - name: SCRAPE_INTERVAL_SECONDS
+              value: "{{ .Values.config.scrapeInterval }}"
+            - name: SCRAPE_TIMEOUT_SECONDS
+              value: "{{ .Values.config.httpTimeout }}"
+            - name: ENABLE_LEADER_ELECTION
+              value: "{{ .Values.leaderElection.enabled }}"
+            - name: ENABLE_METRICS
+              value: "{{ .Values.metrics.enabled }}"
+            - name: METRICS_PORT
+              value: "{{ .Values.metrics.port }}"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
