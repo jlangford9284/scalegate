@@ -1,0 +1,19 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "scalegate.fullname" . }}
+  labels:
+    app: {{ include "scalegate.name" . }}
+    helm.sh/chart: {{ include "scalegate.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.metrics.port }}
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+  selector:
+    app: {{ include "scalegate.name" . }}
+{{- end }}
