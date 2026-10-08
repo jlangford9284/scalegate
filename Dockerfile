@@ -1,15 +1,16 @@
-FROM golang:1.21-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 WORKDIR /app
-COPY go.mod ./
-COPY main.go ./
+COPY go.mod go.sum ./
 
-# Fetch dependencies and tidy
-RUN go get github.com/prometheus/common@v0.45.0
+COPY cmd/ cmd/
+COPY internal/ internal/
+
+RUN go get github.com/prometheus/client_golang/prometheus/promhttp
 RUN go mod tidy
 
 # Build static binary
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o scalegate main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o scalegate cmd/scalegate/main.go
 
 # Minimal base image for final stage
 FROM gcr.io/distroless/static:nonroot
