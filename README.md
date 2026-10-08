@@ -1,5 +1,9 @@
 # Scalegate
 
+<p align="center">
+  <img width="120" height="120" alt="Scalegate Logo" src="https://github.com/user-attachments/assets/2f29602b-9e16-4b88-8f3c-b02de6302191" />
+</p>
+
 **Scalegate** is a zero-bloat, highly available Kubernetes Operator that natively protects your active worker pods from premature downscaling. 
 
 By directly scraping your pods' Prometheus metrics and dynamically patching their Kubernetes API `deletion-cost`, Scalegate ensures that pods actively processing background tasks (or handling long-running websocket connections) are the **last** to be terminated by the Horizontal Pod Autoscaler (HPA) when traffic subsides.
