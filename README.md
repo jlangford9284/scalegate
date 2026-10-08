@@ -31,10 +31,12 @@ Scalegate runs a configurable background loop that watches for Pods carrying the
 
 ## Installation
 
-Deploy Scalegate using the included Helm chart:
+Deploy Scalegate using our public Helm repository:
 
 ```bash
-helm upgrade --install scalegate ./charts/scalegate -n scalegate --create-namespace
+helm repo add scalegate https://jlangford9284.github.io/scalegate
+helm repo update
+helm upgrade --install scalegate scalegate/scalegate -n scalegate --create-namespace
 ```
 
 ### Helm Configuration (`values.yaml`)
