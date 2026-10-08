@@ -5,8 +5,7 @@ image:
   pullPolicy: IfNotPresent
   tag: "latest"
 
-imagePullSecrets:
-  - name: private-ghcr-secret
+imagePullSecrets: []
 
 config:
   scrapeInterval: "3s"
