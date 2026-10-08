@@ -1,0 +1,15 @@
+apiVersion: v1
+entries:
+  scalegate:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-10-08T21:45:43.556199431+01:00"
+    description: A Kubernetes Operator that prevents data loss during aggressive KEDA
+      scale-down events by dynamically managing pod-deletion-cost.
+    digest: 7ee9473a08b210510907b65e9cdfd0600c00e6d56ee2437e6abf73b5cd85fd25
+    name: scalegate
+    type: application
+    urls:
+    - https://jlangford9284.github.io/scalegate/scalegate-1.0.0.tgz
+    version: 1.0.0
+generated: "2026-10-08T21:45:43.555589942+01:00"
