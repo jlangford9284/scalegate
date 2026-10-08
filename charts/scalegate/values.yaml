@@ -1,7 +1,7 @@
 replicaCount: 2
 
 image:
-  repository: ghcr.io/jlangford9284/scalegate
+  repository: docker.io/jlangford9284/scalegate
   pullPolicy: IfNotPresent
   tag: "latest"
 
