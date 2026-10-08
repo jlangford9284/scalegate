@@ -76,6 +76,87 @@ spec:
 
 ---
 
+## Emitting the Metric (Examples)
+
+Because Scalegate looks for standard Prometheus metrics, instrumenting your applications is incredibly easy. All you need to do is increment a Gauge when work starts, and decrement it when work finishes!
+
+Here is how you would expose the `scalegate_active_tasks` metric on port `8080` in different languages:
+
+### Node.js (`prom-client`)
+
+```javascript
+const promClient = require('prom-client');
+const express = require('express');
+
+const activeTasks = new promClient.Gauge({
+  name: 'scalegate_active_tasks',
+  help: 'Number of active background tasks'
+});
+
+async function processQueue() {
+  activeTasks.inc();
+  try {
+    await doHeavyLifting();
+  } finally {
+    activeTasks.dec(); 
+  }
+}
+
+const app = express();
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', promClient.register.contentType);
+  res.end(await promClient.register.metrics());
+});
+app.listen(8080);
+```
+
+### Python (`prometheus_client`)
+
+```python
+from prometheus_client import Gauge, start_http_server
+import time
+
+active_tasks = Gauge('scalegate_active_tasks', 'Number of active background tasks')
+
+start_http_server(8080)
+
+def process_job():
+    active_tasks.inc() 
+    try:
+        time.sleep(10) 
+    finally:
+        active_tasks.dec() 
+```
+
+### .NET C# (`prometheus-net`)
+
+```csharp
+using Prometheus;
+
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.UseMetricServer(); 
+
+var activeTasks = Metrics.CreateGauge("scalegate_active_tasks", "Number of active background tasks");
+
+app.MapPost("/process", async () => {
+    activeTasks.Inc(); 
+    try
+    {
+        await DoHeavyLiftingAsync();
+    }
+    finally
+    {
+        activeTasks.Dec(); 
+    }
+});
+
+app.Run("http://*:8080");
+```
+
+---
+
 ## Operator Metrics
 
 When `metrics.enabled` is `true`, Scalegate exposes standard Go runtime metrics along with these advanced operator-specific metrics on `/metrics` (Port 8081):
